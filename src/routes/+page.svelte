@@ -31,7 +31,7 @@
     border-radius: 10px;
     box-shadow: 0px 0px 3px 0px black;
     font-weight: bold;
-    font-family: cursive;
+    font-family: Arial, Helvetica, sans-serif;
   }
 </style>
 
