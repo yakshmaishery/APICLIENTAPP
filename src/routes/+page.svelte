@@ -54,6 +54,7 @@
     let HeaderBody = {}
     let Postbodytext = ""
     let Alertbox = false;
+    let BLURL = "https://apiserver-roan.vercel.app/"
     // @ts-ignore
     const changeMethod = (e) => {
         APIMethod = e.target.innerHTML
@@ -111,8 +112,8 @@
       {
         if(APIMethod == "GET"){
           try{
-            let Body = {APIURL:URL}
-            axios.post("https://apiserver-roan.vercel.app/GET_ENDPOINT",Body,{headers:HeaderBody}).
+            let Body = {APIURL:URL,headers:HeaderBody}
+            axios.post(BLURL+"GET_ENDPOINT",Body).
             then((responses) => {
               // console.log(responses)
               if(responses)
@@ -124,6 +125,7 @@
                 else{
                   ResponseData = undefined;
                   ResponseHeaders = undefined;
+                  ErrorMessage = JSON.stringify(responses.data,null,3)
                 }
               }
             })
@@ -142,7 +144,7 @@
         if(APIMethod == "POST"){
           try{
             let Body = {APIURL:URL,data:APIBody,Headers:HeaderBody}
-            axios.post("https://apiserver-roan.vercel.app/POST_ENDPOINT",Body).
+            axios.post(BLURL+"POST_ENDPOINT",Body).
             then((responses) => {
               // console.log(responses)
               if(responses)
@@ -154,12 +156,13 @@
                 else{
                   ResponseData = undefined;
                   ResponseHeaders = undefined;
+                  ErrorMessage = JSON.stringify(responses.data,null,3)
                 }
               }
             })
             .catch((err)=>{
               //console.error(err)
-              ErrorMessage = `Error: ${err.message}`;
+              ErrorMessage = err;
               ResponseData = undefined;
               ResponseHeaders = undefined;
             })
