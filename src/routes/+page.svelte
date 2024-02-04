@@ -110,66 +110,89 @@
       document.getElementById("pills-contact-tab").click()
       if(URL)
       {
-        if(APIMethod == "GET"){
-          try{
-            let Body = {APIURL:URL,headers:HeaderBody}
-            axios.post(BLURL+"GET_ENDPOINT",Body).
-            then((responses) => {
-              // console.log(responses)
-              if(responses)
-              {
-                if(responses.status == 200){
-                ResponseHeaders = JSON.stringify(responses.data.RequestHeaders,null,3);
-                ResponseData = JSON.stringify(responses.data.RequestResponse,null,3);
-                }
-                else{
+        if(URL.includes("localhost"))
+        {
+          axios({
+                url: URL,
+                method: APIMethod,
+                timeout: 2000,
+                data:APIBody,
+                headers:HeaderBody
+              })
+                .then((response) => {
+                  ResponseHeaders = undefined;
+                  ErrorMessage = undefined;
+                  ResponseData = JSON.stringify(response.data,null,3);
+                })
+                .catch((error) => {
                   ResponseData = undefined;
                   ResponseHeaders = undefined;
-                  ErrorMessage = JSON.stringify(responses.data,null,3)
-                }
-              }
-            })
-            .catch((err)=>{
-              //console.error(err)
-              ErrorMessage = `Error: ${err.message}`;
-              ResponseData = undefined;
-              ResponseHeaders = undefined;
-            })
-          }
-          catch(err){
-            ResponseData = undefined;
-            ResponseHeaders = undefined;
-          }
+                  ErrorMessage = JSON.stringify(error,null,3)
+                });
         }
-        if(APIMethod == "POST"){
-          try{
-            let Body = {APIURL:URL,data:APIBody,Headers:HeaderBody}
-            axios.post(BLURL+"POST_ENDPOINT",Body).
-            then((responses) => {
-              // console.log(responses)
-              if(responses)
-              {
-                if(responses.status == 200){
-                ResponseHeaders = JSON.stringify(responses.data.RequestHeaders,null,3);
-                ResponseData = JSON.stringify(responses.data.RequestResponse,null,3);
+        else
+        {
+          if(APIMethod == "GET"){
+            try{
+              let Body = {APIURL:URL,headers:HeaderBody}
+              axios.post(BLURL+"GET_ENDPOINT",Body).
+              then((responses) => {
+                // console.log(responses)
+                if(responses)
+                {
+                  if(responses.status == 200){
+                  ResponseHeaders = JSON.stringify(responses.data.RequestHeaders,null,3);
+                  ResponseData = JSON.stringify(responses.data.RequestResponse,null,3);
+                  }
+                  else{
+                    ResponseData = undefined;
+                    ResponseHeaders = undefined;
+                    ErrorMessage = JSON.stringify(responses.data,null,3)
+                  }
                 }
-                else{
-                  ResponseData = undefined;
-                  ResponseHeaders = undefined;
-                  ErrorMessage = JSON.stringify(responses.data,null,3)
-                }
-              }
-            })
-            .catch((err)=>{
-              //console.error(err)
-              ErrorMessage = err;
+              })
+              .catch((err)=>{
+                //console.error(err)
+                ErrorMessage = `Error: ${err.message}`;
+                ResponseData = undefined;
+                ResponseHeaders = undefined;
+              })
+            }
+            catch(err){
               ResponseData = undefined;
               ResponseHeaders = undefined;
-            })
+            }
           }
-          catch(err){
-            ResponseData = undefined;
-            ResponseHeaders = undefined;
+          if(APIMethod == "POST"){
+            try{
+              let Body = {APIURL:URL,data:APIBody,Headers:HeaderBody}
+              axios.post(BLURL+"POST_ENDPOINT",Body).
+              then((responses) => {
+                // console.log(responses)
+                if(responses)
+                {
+                  if(responses.status == 200){
+                  ResponseHeaders = JSON.stringify(responses.data.RequestHeaders,null,3);
+                  ResponseData = JSON.stringify(responses.data.RequestResponse,null,3);
+                  }
+                  else{
+                    ResponseData = undefined;
+                    ResponseHeaders = undefined;
+                    ErrorMessage = JSON.stringify(responses.data,null,3)
+                  }
+                }
+              })
+              .catch((err)=>{
+                //console.error(err)
+                ErrorMessage = err;
+                ResponseData = undefined;
+                ResponseHeaders = undefined;
+              })
+            }
+            catch(err){
+              ResponseData = undefined;
+              ResponseHeaders = undefined;
+            }
           }
         }
       }
@@ -273,12 +296,14 @@
         <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab" tabindex="0">
           {#if ResponseData}
           <div>
+            {#if ResponseHeaders}
             <h6>Response Headers <button class="btn btn-success" on:click={navigator.clipboard.writeText(ResponseHeaders)}>Copy <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
               <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
               <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
             </svg></button></h6>
             <pre class="responsesstyles">{ResponseHeaders}</pre>
             <hr>
+            {/if}
             <h6>Response Body <button class="btn btn-success" on:click={navigator.clipboard.writeText(ResponseData)}>Copy <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
               <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
               <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
