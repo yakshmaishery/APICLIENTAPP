@@ -112,7 +112,7 @@
       {
         if(URL.includes("localhost"))
         {
-          axios({
+          await axios({
                 url: URL,
                 method: APIMethod,
                 timeout: 20000000,
