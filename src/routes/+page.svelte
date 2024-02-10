@@ -115,7 +115,7 @@
           axios({
                 url: URL,
                 method: APIMethod,
-                timeout: 2000,
+                timeout: 20000000,
                 data:APIBody,
                 headers:HeaderBody
               })
