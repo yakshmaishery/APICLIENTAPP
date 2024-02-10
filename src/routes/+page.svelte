@@ -41,7 +41,7 @@
     import FooterComponent from '$lib/MyComponents/FooterComponent.svelte';
     import axios from 'axios'
     let APIMethod = "GET";
-    let URL = "";
+    let APIURL = "";
     let ResponseHeaders;
     let ResponseData;
     let ErrorMessage;
@@ -59,6 +59,15 @@
     const changeMethod = (e) => {
         APIMethod = e.target.innerHTML
     }
+
+    const isValidJSON = obj => {
+      try {
+        JSON.parse(obj);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    };
 
     const AddKeyValuePair = () => {
         APIBody[bodyKey] = bodyvalue
@@ -91,7 +100,7 @@
 
     const ClearFunction = () => {
       APIMethod = "GET";
-      URL = "";
+      APIURL = "";
       ResponseHeaders = undefined;
       ResponseData = undefined;
       ErrorMessage = undefined;
@@ -108,12 +117,14 @@
     const sendFunc = async () => {
       Loader=true;
       document.getElementById("pills-contact-tab").click()
-      if(URL)
+      if(APIURL)
       {
-        if(URL.includes("localhost"))
+        let checkURL = new URL(APIURL)
+        //console.table(checkURL)
+        if(checkURL.hostname == "localhost" || checkURL.hostname == "127.0.0.1")
         {
           await axios({
-                url: URL,
+                url: APIURL,
                 method: APIMethod,
                 timeout: 20000000,
                 data:APIBody,
@@ -134,7 +145,7 @@
         {
           if(APIMethod == "GET"){
             try{
-              let Body = {APIURL:URL,headers:HeaderBody}
+              let Body = {APIURL:APIURL,headers:HeaderBody}
               axios.post(BLURL+"GET_ENDPOINT",Body).
               then((responses) => {
                 // console.log(responses)
@@ -165,7 +176,7 @@
           }
           if(APIMethod == "POST"){
             try{
-              let Body = {APIURL:URL,data:APIBody,Headers:HeaderBody}
+              let Body = {APIURL:APIURL,data:APIBody,Headers:HeaderBody}
               axios.post(BLURL+"POST_ENDPOINT",Body).
               then((responses) => {
                 // console.log(responses)
@@ -201,6 +212,40 @@
       }
       Loader=false;
     }
+
+    const DownLoadFunc = async () => {
+      const response = await fetch('DownloadTempate.txt');
+      let fileData = await response.text()
+      fileData = fileData.replace("[docs]","API Documentation as on "+new Date().toLocaleString())
+      fileData = fileData.replace("[URL]",APIURL)
+      fileData = fileData.replace("[method]",APIMethod)
+      fileData = fileData.replace("[RequestHeaders]",JSON.stringify(HeaderBody,null,3))
+      fileData = fileData.replace("[RequestBody]",JSON.stringify(APIBody,null,3))
+      if(isValidJSON(ResponseHeaders))
+      {
+        fileData = fileData.replace("[ResponseHeaders]",JSON.stringify(JSON.parse(ResponseHeaders),null,3))
+      }
+      else{
+        fileData = fileData.replace("[ResponseHeaders]",JSON.stringify(ResponseHeaders,null,3))
+      }
+      if(isValidJSON(ResponseData))
+      {
+        fileData = fileData.replace("[ResponseBody]",JSON.stringify(JSON.parse(ResponseData),null,3))
+      }
+      else{
+        fileData = fileData.replace("[ResponseBody]",JSON.stringify(JSON.parse(ResponseData),null,3))
+      }
+      var blob = new Blob([fileData],  
+                {type : "text/plain"});
+      var url = window.URL || window.webkitURL;
+      let link = url.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.setAttribute("download", `APIDocs.txt`);
+      a.setAttribute("href", link);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
 </script>
 <HeaderComponent />
   {#if Alertbox}
@@ -216,7 +261,7 @@
           <li><button class="dropdown-item fw-bold" on:click={changeMethod}>GET</button></li>
           <li><button class="dropdown-item fw-bold" on:click={changeMethod}>POST</button></li>
         </ul>
-        <input type="text" class="form-control" placeholder="Enter URL..." bind:value={URL} aria-label="Text input with dropdown button">
+        <input type="text" class="form-control" placeholder="Enter URL..." bind:value={APIURL} aria-label="Text input with dropdown button">
         <button type="button" class="btn btn-outline-success" on:click={sendFunc}>SEND <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right-circle-fill" viewBox="0 0 16 16">
           <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0M4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5z"/>
         </svg></button>
@@ -236,6 +281,11 @@
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Response</button>
         </li>
+        {#if ResponseData || ResponseHeaders}
+        <li class="nav-item" role="presentation">
+          <button class="btn btn-warning" type="button" on:click={DownLoadFunc}>Download</button>
+        </li>
+        {/if}
       </ul>
       <hr>
 
@@ -246,10 +296,10 @@
           <div>
             <div class="row">
               <div class="col">
-                <input type="text" class="form-control" placeholder="Key" disabled={URL==""?true:false} bind:value={HeaderKey} aria-label="First name">
+                <input type="text" class="form-control" placeholder="Key" disabled={APIURL==""?true:false} bind:value={HeaderKey} aria-label="First name">
               </div>
               <div class="col">
-                <input type="text" class="form-control" placeholder="Value" disabled={URL==""?true:false} bind:value={Headeralue} aria-label="Last name">
+                <input type="text" class="form-control" placeholder="Value" disabled={APIURL==""?true:false} bind:value={Headeralue} aria-label="Last name">
               </div>
               <div class="col">
                 <button class="btn btn-success" on:click={AddKeyValuePairHeader}>➕</button>
@@ -268,10 +318,10 @@
               <div>
                 <div class="row">
                   <div class="col">
-                    <input type="text" class="form-control" placeholder="Key" disabled={URL==""?true:false} bind:value={bodyKey} aria-label="First name">
+                    <input type="text" class="form-control" placeholder="Key" disabled={APIURL==""?true:false} bind:value={bodyKey} aria-label="First name">
                   </div>
                   <div class="col">
-                    <input type="text" class="form-control" placeholder="Value" disabled={URL==""?true:false} bind:value={bodyvalue} aria-label="Last name">
+                    <input type="text" class="form-control" placeholder="Value" disabled={APIURL==""?true:false} bind:value={bodyvalue} aria-label="Last name">
                   </div>
                   <div class="col">
                     <button class="btn btn-success" on:click={AddKeyValuePair}>➕</button>
@@ -279,7 +329,7 @@
                   </div>
                 </div>
                 <br>
-                <textarea class="form form-control" disabled={URL==""?true:false} cols="5" rows="6" on:change={ChangesPostBody} id="txtpostmeth">{JSON.stringify(APIBody,null,3)}</textarea>
+                <textarea class="form form-control" disabled={APIURL==""?true:false} cols="5" rows="6" on:change={ChangesPostBody} id="txtpostmeth">{JSON.stringify(APIBody,null,3)}</textarea>
                 <hr>
                 <div class="my-3">
                   <pre class="responsesstyles">{JSON.stringify(APIBody,null,3)}</pre>
