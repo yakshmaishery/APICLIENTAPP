@@ -440,7 +440,7 @@
                 {#each Object.entries(GetParams) as [keypar,valuepar]}
                 <div class="input-group mb-3">
                   <span class="input-group-text fw-bold" id="inputGroup-sizing-default">{keypar}</span>
-                  <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" value={valuepar} on:input={(e) => changeParamValue(keypar,e.target.value)}>
+                  <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" value={valuepar} on:input={(e) => changeParamValue(keypar,e.target.value,"ADD")}>
                 </div>
                 {/each}
               </div>
