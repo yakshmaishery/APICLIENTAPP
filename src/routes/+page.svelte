@@ -99,13 +99,14 @@
     // Add the Key value pair from the GET Method
     const AddKeyValuePairQueryParam = () => {
       GetParams[paramkey] = paramvalue
-      changeParamValue(paramkey,paramvalue)
+      changeParamValue(paramkey,paramvalue,"ADD")
     }
 
     // Remove the Key value pair from the GET Method
     const RemoveKeyValuePairQueryParam = () => {
         delete(GetParams[paramkey]);
         GetParams = GetParams
+        changeParamValue(paramkey,paramvalue)
     }
 
     // Change in the Textarea for the POST
@@ -301,8 +302,11 @@
     }
 
     // change params value
-    const changeParamValue = (key,value) => {
-      GetParams[key] = value
+    const changeParamValue = (key,value,flag = "") => {
+      if(flag == "ADD")
+      {
+        GetParams[key] = value
+      }
       let params = GetParams;
       // convert object to list -- to enable .map
       let data = Object.entries(params);
