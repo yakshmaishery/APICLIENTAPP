@@ -132,11 +132,15 @@
       bodyKey = ""
       bodyvalue = ""
       APIBody = {}
-      Postbodytext = ""
       HeaderKey = ""
       Headeralue = ""
       HeaderBody = {}
       GetParams = {}
+      paramkey = ""
+      paramvalue = ""
+      Postbodytext = ""
+      Alertbox = false;
+      warnbox = false;
     }
 
     // Send Button Logic
