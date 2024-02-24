@@ -176,7 +176,7 @@
           if(APIMethod == "GET"){
             try{
               let Body = {APIURL:APIURL,headers:HeaderBody}
-              axios.post(BLURL+"GET_ENDPOINT",Body,{timeout:50000000}).
+              await axios.post(BLURL+"GET_ENDPOINT",Body,{timeout:50000000}).
               then((responses) => {
                 // console.log(responses)
                 if(responses)
@@ -207,7 +207,7 @@
           if(APIMethod == "POST"){
             try{
               let Body = {APIURL:APIURL,data:APIBody,Headers:HeaderBody}
-              axios.post(BLURL+"POST_ENDPOINT",Body,{timeout:50000000}).
+              await axios.post(BLURL+"POST_ENDPOINT",Body,{timeout:50000000}).
               then((responses) => {
                 // console.log(responses)
                 if(responses)
