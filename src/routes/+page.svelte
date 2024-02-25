@@ -58,7 +58,10 @@
     let Postbodytext = ""
     let Alertbox = false;
     let warnbox = false;
+    let checkloader = false;
     let BLURL = "https://apiserver-roan.vercel.app/"  // API Calling URL
+    let responsecontenttype = "";
+    let previewResponse = "";
     // @ts-ignore
     const changeMethod = (e) => {
         APIMethod = e.target.innerHTML
@@ -141,14 +144,20 @@
       Postbodytext = ""
       Alertbox = false;
       warnbox = false;
+      checkloader = false;
+      previewResponse = "";
+      responsecontenttype = "";
+      document.getElementById("pills-home-tab").click()
     }
 
     // Send Button Logic
     const sendFunc = async () => {
       Loader=true;
+      previewResponse=""
       document.getElementById("pills-contact-tab").click()
       if(APIURL)
       {
+        checkloader = true;
         let checkURL = new URL(APIURL)
         //console.table(checkURL)
         if(checkURL.hostname == "localhost" || checkURL.hostname == "127.0.0.1")
@@ -184,6 +193,10 @@
                   if(responses.status == 200){
                   ResponseHeaders = JSON.stringify(responses.data.RequestHeaders,null,3);
                   ResponseData = JSON.stringify(responses.data.RequestResponse,null,3);
+                  responsecontenttype = responses.data.RequestHeaders[0].headers["content-type"]
+                  if(HeaderBody["spresen"] && (responsecontenttype.includes("image") || responsecontenttype.includes("pdf"))){
+                    previewResponse = `data:${responsecontenttype};base64, ${ResponseData.replaceAll("\"","")}`
+                  }
                   }
                   else{
                     ResponseData = undefined;
@@ -215,6 +228,10 @@
                   if(responses.status == 200){
                   ResponseHeaders = JSON.stringify(responses.data.RequestHeaders,null,3);
                   ResponseData = JSON.stringify(responses.data.RequestResponse,null,3);
+                  responsecontenttype = responses.data.RequestHeaders[0].headers["content-type"]
+                  if(HeaderBody["spresen"] && (responsecontenttype.includes("image") || responsecontenttype.includes("pdf"))){
+                    previewResponse = `data:${responsecontenttype};base64, ${ResponseData.replaceAll("\"","")}`
+                  }
                   }
                   else{
                     ResponseData = undefined;
@@ -236,6 +253,7 @@
             }
           }
         }
+        checkloader=false;
       }
       else{
         Alertbox = true;
@@ -322,6 +340,15 @@
       newURL.search = query
       APIURL = newURL.href
     }
+
+    const downloadResponseAsFile = async () => {
+      HeaderBody["spresen"] = true;
+      await sendFunc()
+      delete(HeaderBody["spresen"]);
+      HeaderBody = HeaderBody
+      responsecontenttype = ""
+      document.getElementById("pills-Preview-tab").click()
+    }
 </script>
 <HeaderComponent />
   {#if Alertbox}
@@ -365,6 +392,11 @@
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Response</button>
         </li>
+        {#if previewResponse}
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="pills-Preview-tab" data-bs-toggle="pill" data-bs-target="#pills-Preview" type="button" role="tab" aria-controls="pills-Preview" aria-selected="false">Preview</button>
+        </li>
+        {/if}
         {#if ResponseData || ResponseHeaders}
         <li class="nav-item" role="presentation">
           <button class="btn btn-warning" type="button" on:click={DownLoadFunc}>Download</button>
@@ -450,6 +482,14 @@
         </div>
         <!-- Response -->
         <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab" tabindex="0">
+          {#if checkloader}
+          <div style="display: flex;justify-content: center;align-items: center;margin: 20px;">
+            <h5 style="margin-right: 10px;">Loading...</h5>
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+          {/if}
           {#if ResponseData}
           <div>
             {#if ResponseHeaders}
@@ -463,7 +503,16 @@
             <h6>Response Body <button class="btn btn-success" on:click={navigator.clipboard.writeText(ResponseData)}>Copy <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
               <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
               <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
-            </svg></button></h6>
+            </svg></button>
+
+            {#if responsecontenttype && (responsecontenttype.includes("image") || responsecontenttype.includes("pdf"))}
+            <button class="btn btn-success" on:click={downloadResponseAsFile}>Preview <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+            </svg>
+          </button>
+          {/if}
+          </h6>
             <pre class="responsesstyles">{ResponseData}</pre>
           </div>
           {:else if ErrorMessage}
@@ -476,6 +525,12 @@
             <h6 class="responsesstyles">There is no Response</h6>
           </div>
           {/if}
+        </div>
+        <div class="tab-pane fade" id="pills-Preview" role="tabpanel" aria-labelledby="pills-Preview-tab" tabindex="0">
+          <div>
+            <!-- <embed src={previewResponse}/> -->
+            <iframe src={previewResponse} alt="" title="Preview Image" height="500" width="100%"></iframe>
+          </div>
         </div>
       </div>
 </div>
