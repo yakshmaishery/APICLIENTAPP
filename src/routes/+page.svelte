@@ -263,7 +263,7 @@
 
     // Download the API documentation
     const DownLoadFunc = async () => {
-      const response = await fetch('DownloadTempate.txt');
+      const response = await fetch('DownloadTempate.html');
       let fileData = await response.text()
       fileData = fileData.replace("[docs]","API Documentation as on "+new Date().toLocaleString()) // Add the First heading and as on Date
       fileData = fileData.replace("[URL]",APIURL) // URL 
@@ -300,11 +300,11 @@
 
       // Create a Text file Blob
       var blob = new Blob([fileData],  
-                {type : "text/plain"});
+                {type : "text/html"});
       var url = window.URL || window.webkitURL;
       let link = url.createObjectURL(blob);
       let a = document.createElement("a");
-      a.setAttribute("download", `APIDocs.txt`); // Set the Default File Name for the document
+      a.setAttribute("download", `APIDocs.html`); // Set the Default File Name for the document
       a.setAttribute("href", link);
       document.body.appendChild(a);
       a.click();
